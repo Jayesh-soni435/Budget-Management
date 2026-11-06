@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ t.app_name }} — Personal Finance</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('index', lang=lang) }}">
+      <span class="brand-mark">₹</span>
+      <span><strong>{{ t.app_name }}</strong><small>{{ t.tagline }}</small></span>
+    </a>
+    <form class="language-form" method="get" action="/">
+      <label for="lang">{{ t.language }}</label>
+      <select id="lang" name="lang" onchange="this.form.submit()">
+        <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+        <option value="gu" {% if lang == 'gu' %}selected{% endif %}>ગુજરાતી</option>
+        <option value="hi" {% if lang == 'hi' %}selected{% endif %}>हिन्दी</option>
+      </select>
+    </form>
+  </header>
+
+  <main class="container">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">PERSONAL FINANCE DASHBOARD</p>
+        <h1>{{ t.app_name }}</h1>
+        <p class="muted">{{ t.tagline }}</p>
+      </div>
+      <span class="date-chip">{{ today }}</span>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <p class="notice">ℹ️ {{ t.warning }}</p>
+
+    <section class="summary-grid">
+      <article class="summary-card balance-card">
+        <span>{{ t.balance }}</span>
+        <strong>₹{{ "%.2f"|format(balance) }}</strong>
+      </article>
+      <article class="summary-card">
+        <span>{{ t.income }}</span>
+        <strong class="positive">+ ₹{{ "%.2f"|format(income) }}</strong>
+      </article>
+      <article class="summary-card">
+        <span>{{ t.expense }}</span>
+        <strong class="negative">− ₹{{ "%.2f"|format(expense) }}</strong>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">RECORD MONEY</p><h2>{{ t.add }}</h2></div>
+        </div>
+        <form method="post" action="{{ url_for('add_transaction') }}" class="transaction-form">
+          <input type="hidden" name="lang" value="{{ lang }}">
+          <label>{{ t.type }}
+            <select name="kind" required>
+              <option value="income">{{ t.income_option }}</option>
+              <option value="expense">{{ t.expense_option }}</option>
+            </select>
+          </label>
+          <label>{{ t.amount }}
+            <input type="number" name="amount" min="0.01" step="0.01" placeholder="e.g. 500" required>
+          </label>
+          <label>{{ t.category }}
+            <input type="text" name="category" maxlength="60" placeholder="e.g. Salary, Food, Travel" required>
+          </label>
+          <label>{{ t.date }}
+            <input type="date" name="transaction_date" value="{{ today }}" required>
+          </label>
+          <label>{{ t.note }}
+            <input type="text" name="note" maxlength="200" placeholder="Add a short note">
+          </label>
+          <button class="primary-button" type="submit">{{ t.save }}</button>
+        </form>
+      </article>
+
+      <article class="panel transactions-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">YOUR RECORDS</p><h2>{{ t.recent }}</h2></div>
+          <span class="count">{{ rows|length }}</span>
+        </div>
+        {% if rows %}
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>{{ t.date }}</th><th>{{ t.category }}</th><th>Amount</th><th></th></tr></thead>
+              <tbody>
+                {% for row in rows %}
+                  <tr>
+                    <td>{{ row.transaction_date }}</td>
+                    <td><strong>{{ row.category }}</strong><small class="row-note">{{ row.note }}</small></td>
+                    <td class="{{ 'positive' if row.kind == 'income' else 'negative' }}">
+                      {{ '+' if row.kind == 'income' else '−' }}₹{{ "%.2f"|format(row.amount) }}
+                    </td>
+                    <td>
+                      <form method="post" action="{{ url_for('delete_transaction', transaction_id=row.id) }}" onsubmit="return confirm('Delete this transaction?')">
+                        <input type="hidden" name="lang" value="{{ lang }}">
+                        <button class="delete-button" type="submit" aria-label="{{ t.delete }}">×</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state"><span>📊</span><p>{{ t.empty }}</p></div>
+        {% endif %}
+      </article>
+    </section>
+    <footer>PAISAPILOT · PHASE 1 LEARNING PROTOTYPE</footer>
+  </main>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
