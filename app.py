@@ -121,6 +121,7 @@ def delete_transaction(transaction_id):
     flash(TRANSLATIONS[lang]["deleted"], "success")
     return redirect(url_for("index", lang=lang))
 
+ init_db()
+
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
