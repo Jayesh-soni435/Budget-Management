@@ -122,6 +122,5 @@ def delete_transaction(transaction_id):
     return redirect(url_for("index", lang=lang))
 
  init_db()
-
 if __name__ == "__main__":
     app.run(debug=True)
