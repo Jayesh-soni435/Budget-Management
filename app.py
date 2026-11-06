@@ -107,20 +107,28 @@ def add_transaction():
         conn.execute("""
             INSERT INTO transactions (kind, amount, category, note, transaction_date)
             VALUES (?, ?, ?, ?, ?)
-        """, (kind, amount, category, note, tx_date))
+ 
+""", (kind, amount, category, note, tx_date))
     flash(TRANSLATIONS[lang]["saved"], "success")
     return redirect(url_for("index", lang=lang))
+
 
 @app.route("/delete/<int:transaction_id>", methods=["POST"])
 def delete_transaction(transaction_id):
     lang = request.form.get("lang", "en")
     if lang not in TRANSLATIONS:
         lang = "en"
+
     with get_db() as conn:
         conn.execute("DELETE FROM transactions WHERE id = ?", (transaction_id,))
+
     flash(TRANSLATIONS[lang]["deleted"], "success")
     return redirect(url_for("index", lang=lang))
 
- init_db()
+
+# Initialize database
+init_db()
+
+
 if __name__ == "__main__":
     app.run(debug=True)
